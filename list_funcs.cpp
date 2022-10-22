@@ -53,7 +53,7 @@ void list_dtor(my_list *lst)
     return;
 }
 
-int list_insert_after(my_list *lst, lst_elem value, ssize_t index)
+ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 {
     assert(lst);
     assert(index >= 0);
@@ -62,8 +62,9 @@ int list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 
     assert(lst->data[index].prev != -1); //not allow to insert after empty cell
 
-    int free_cell = find_free_cell(lst);
+    ssize_t free_cell = lst->free;
     assert(free_cell > 0);
+    lst->free = lst->data[free_cell].next;
 
     lst->data[free_cell].value = value;
 
@@ -92,7 +93,7 @@ int list_insert_after(my_list *lst, lst_elem value, ssize_t index)
     return free_cell;
 }
 
-int list_insert_back(my_list *lst, lst_elem value)
+ssize_t list_insert_back(my_list *lst, lst_elem value)
 {
     assert(lst);
 
@@ -100,7 +101,7 @@ int list_insert_back(my_list *lst, lst_elem value)
 
     list_assert(lst);
 
-    int ans = list_insert_after(lst, value, lst->tail);
+    ssize_t ans = list_insert_after(lst, value, lst->tail);
 
     return ans;
 }
@@ -132,26 +133,10 @@ void list_del(my_list *lst, ssize_t index)
     }
 
     lst->data[index].prev = -1;
+    lst->data[index].next = lst->free;
+    lst->free = index;
 
     list_assert(lst);
 
     return;
-}
-
-int find_free_cell(my_list *lst)
-{
-    assert(lst);
-
-    int ans = -1;
-
-    for(int i = 0; i < lst->size; i++)
-    {
-        if(lst->data[i].prev == -1)
-        {
-            ans = i;
-            break;
-        }
-    }
-
-    return ans;
 }

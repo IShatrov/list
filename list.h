@@ -15,6 +15,8 @@ enum lst_err_codes
     ZERO_ELMT_CHANGED = 1<<4,
 
     WRONG_PREV        = 1<<5,
+
+    WRONG_PREV_EMPTY  = 1<<6,
 };
 
 typedef char lst_elem;
@@ -56,12 +58,10 @@ void list_ctor(my_list *lst, ssize_t lst_size, FILE *log);
 
 void list_dtor(my_list *lst);
 
-int list_insert_after(my_list *lst, lst_elem value, ssize_t index);
+ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index);
 
-int list_insert_back(my_list *lst, lst_elem value);
+ssize_t list_insert_back(my_list *lst, lst_elem value);
 
 void list_del(my_list *lst, ssize_t index);
-
-int find_free_cell(my_list *lst);
 
 #endif

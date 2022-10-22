@@ -33,6 +33,7 @@ void list_dump(my_list *lst, int err_code)
         PRINT_ERR(ZERO_ELMT_CHANGED, ZERO ELEMENT CHANGED);
 
         PRINT_ERR(WRONG_PREV, PREVIOUS ELEMENT MISMATCH);
+        PRINT_ERR(WRONG_PREV_EMPTY, EMPTY CELL PREV NOT -1);
 
         fputc('\n', lst->log);
         printf("==============================\n");
@@ -56,12 +57,26 @@ char list_assert(my_list *lst)
     if(lst->data[0].prev != 0) err_code |= ZERO_ELMT_CHANGED;
     if(lst->data[0].next != 0) err_code |= ZERO_ELMT_CHANGED;
 
-    ssize_t check = lst->head;    //to-do: once list of empty cells implemented, check if all elements are either free or not free
-    for(int i = 0; i < lst->size; i++)
+    ssize_t check = lst->head;
+    int i = 0;
+    for(; i < lst->size; i++)
     {
         if(lst->data[lst->data[check].next].prev && check != lst->data[lst->data[check].next].prev)
         {
             err_code |= WRONG_PREV;
+
+            break;
+        }
+
+        if(!(check = lst->data[check].next)) break;
+    }
+
+    check = lst->free;
+    for(; i < lst->size; i++)
+    {
+        if(check && lst->data[check].prev != -1)
+        {
+            err_code |= WRONG_PREV_EMPTY;
 
             break;
         }
