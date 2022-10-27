@@ -42,6 +42,8 @@ struct my_list_
     ssize_t free;
 
     FILE* log;
+
+    char create_pretty_dump;
 };
 
 typedef struct my_list_ my_list;
@@ -52,6 +54,11 @@ typedef struct my_list_ my_list;
 void list_dump(my_list *lst, int err_code);
 
 //! @param[in] lst Pointer to list.
+//! @param[in] err_code Error code.
+//! @brief Creates pretty dump.
+void list_pretty_dump(my_list *lst, int err_code);
+
+//! @param[in] lst Pointer to list.
 //! @return Returns 1 if no erros were detected.
 //! @brief Checks lst for errors, calls list_dump() if an error was detected.
 char list_assert(my_list *lst);
@@ -59,9 +66,10 @@ char list_assert(my_list *lst);
 //! @param[in] lst Pointer to list.
 //! @param[in] lst_size Size of buffer.
 //! @param[in] log File to place dumps at, pass NULL to not create dumps.
+//! @param[in] create_pretty dump If equals 0 pretty dump is not created.
 //! @param[out] lst Initiallised list.
 //! @brief Creates list.
-void list_ctor(my_list *lst, ssize_t lst_size, FILE *log);
+void list_ctor(my_list *lst, ssize_t lst_size, FILE *log, char create_pretty_dump);
 
 //! @param[in] lst Pointer to list.
 //! @brief Destroys list.

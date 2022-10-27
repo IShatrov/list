@@ -1,0 +1,46 @@
+digraph dump
+{
+	rankdir = LR;
+	node[shape = "record", style = "rounded"];
+
+	head[shape = "circle", style = "filled", fillcolor = "#FC5E53"]
+	head->0
+
+	0[label = "0 | val: 0 | next: 1 | prev: 6"];
+	0->1[color = "red"];
+	0->6[color = "blue"];
+
+	1[label = "1 | val: 65 | next: 5 | prev: 0"];
+	1->5[color = "red"];
+	1->0[color = "blue"];
+
+	5[label = "5 | val: 69 | next: 4 | prev: 1"];
+	5->4[color = "red"];
+	5->1[color = "blue"];
+
+	4[label = "4 | val: 68 | next: 2 | prev: 5"];
+	4->2[color = "red"];
+	4->5[color = "blue"];
+
+	2[label = "2 | val: 66 | next: 3 | prev: 4"];
+	2->3[color = "red"];
+	2->4[color = "blue"];
+
+	3[label = "3 | val: 67 | next: 6 | prev: 2"];
+	3->6[color = "red"];
+	3->2[color = "blue"];
+
+	6[label = "6 | val: 70 | next: 0 | prev: 3"];
+	6->0[color = "red"];
+	6->3[color = "blue"];
+
+	free[shape = "circle", style = "filled", fillcolor = "#FC5E53"]
+	free->7
+
+	7[label = "7 | val: 0 | next: 8 | prev: -1"];
+	7->8[color = "red"];
+	8[label = "8 | val: 0 | next: 9 | prev: -1"];
+	8->9[color = "red"];
+	9[label = "9 | val: 0 | next: 0 | prev: -1"];
+	9->0[color = "red"];
+}

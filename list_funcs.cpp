@@ -1,12 +1,13 @@
 #include "list.h"
 
-void list_ctor(my_list *lst, ssize_t lst_size, FILE *log)
+void list_ctor(my_list *lst, ssize_t lst_size, FILE *log, char create_pretty_dump)
 {
     assert(lst);
     assert(lst_size > 0);
 
     lst->size = lst_size;
     lst->log = log;
+    lst->create_pretty_dump = create_pretty_dump;
 
     lst->data = (lst_data*)calloc(lst_size, sizeof(lst_data));
     assert(lst->data);
@@ -21,7 +22,6 @@ void list_ctor(my_list *lst, ssize_t lst_size, FILE *log)
     }
     lst->data[lst_size - 1].next = 0; //last elem point to zero
 
-    lst->head = 0;
     lst->tail = 0;
     lst->free = 1;
 
@@ -43,7 +43,6 @@ void list_dtor(my_list *lst)
     }
 
     lst->size = -1;
-    lst->head = -1;
     lst->tail = -1;
     lst->free = -1;
     lst->log = NULL;
@@ -68,25 +67,13 @@ ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 
     lst->data[free_cell].value = value;
 
-    if(index != 0)
-    {
-        lst->data[free_cell].next = lst->data[index].next;
-        lst->data[free_cell].prev = index;
+    lst->data[free_cell].next = lst->data[index].next;
+    lst->data[free_cell].prev = index;
 
-        if(index != lst->tail) lst->data[lst->data[index].next].prev = free_cell;
-        else lst->tail = free_cell;
+    lst->data[lst->data[index].next].prev = free_cell;
+    lst->data[index].next = free_cell;
 
-        lst->data[index].next = free_cell;
-    }
-    else
-    {
-        lst->data[free_cell].next = lst->head;
-        lst->data[free_cell].prev = 0;
-
-        lst->head = free_cell;
-
-        if(index == lst->tail) lst->tail = free_cell;
-    }
+    lst->tail = lst->data[0].prev;
 
     list_assert(lst);
 
@@ -116,25 +103,75 @@ void list_del(my_list *lst, ssize_t index)
 
     list_assert(lst);
 
-    if(index != lst->head)
-    {
-        lst->data[lst->data[index].prev].next = lst->data[index].next;
+    lst->data[lst->data[index].prev].next = lst->data[index].next;
 
-        if(index != lst->tail) lst->data[lst->data[index].next].prev = lst->data[index].prev;
-        else lst->tail = lst->data[index].prev;
-    }
-    else
-    {
-        lst->head = lst->data[index].next;
+    lst->data[lst->data[index].next].prev = lst->data[index].prev;
 
-        lst->data[lst->data[index].next].prev = 0;
-
-        if(lst->head == 0) lst->tail = 0;
-    }
-
+    lst->tail = lst->data[0].prev;
     lst->data[index].prev = -1;
     lst->data[index].next = lst->free;
     lst->free = index;
+
+    list_assert(lst);
+
+    return;
+}
+
+ssize_t logic_to_phys(my_list *lst, ssize_t num)
+{
+    assert(lst);
+
+    assert(num >= 0);
+
+    list_assert(lst);
+
+    ssize_t current = 0, i = 0;
+    for(i = 0; i < num; i++)
+    {
+        current = lst->data[current].next;
+
+        if(!current) return -1;
+    }
+
+    return current;
+}
+
+void linearise(my_list *lst)
+{
+    assert(lst);
+
+    list_assert(lst);
+
+    lst_data *new_data = (lst_data*)calloc(lst->size, sizeof(lst_data));
+    assert(new_data);
+
+    int i = 0;
+    ssize_t current = 0;
+    for(i = 0; i < lst->size; i++)
+    {
+        new_data[i].value = lst->data[current].value;
+        new_data[i].next = i + 1;
+        new_data[i].prev = i - 1;
+
+        if(!(current = lst->data[current].next)) break;
+    }
+
+    new_data[0].prev = i;
+    new_data[i].next = 0;
+
+    lst->tail = i;
+    lst->free = ++i;
+
+    for(; i< lst->size; i++)
+    {
+        new_data[i].next = i + 1;
+        new_data[i].prev = -1;
+    }
+
+    new_data[i - 1].next = 0;
+
+    free(lst->data);
+    lst->data = new_data;
 
     list_assert(lst);
 
