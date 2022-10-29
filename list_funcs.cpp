@@ -24,6 +24,7 @@ void list_ctor(my_list *lst, ssize_t lst_size, FILE *log, char create_pretty_dum
 
     lst->tail = 0;
     lst->free = 1;
+    lst->is_linear = 1;
 
     list_assert(lst);
 
@@ -33,7 +34,6 @@ void list_ctor(my_list *lst, ssize_t lst_size, FILE *log, char create_pretty_dum
 void list_dtor(my_list *lst)
 {
     assert(lst);
-
     list_assert(lst);
 
     for(int i = 0; i < lst->size; i++)
@@ -47,7 +47,7 @@ void list_dtor(my_list *lst)
     lst->free = -1;
     lst->log = NULL;
 
-    free(lst->data);
+    free(lst->data);  //null
 
     return;
 }
@@ -56,10 +56,10 @@ ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 {
     assert(lst);
     assert(index >= 0);
-
     assert(lst->free > 0 && "Attempting to insert to full list\n");
-
     assert(lst->data[index].prev != -1); //not allow to insert after empty cell
+
+    if(!(lst->is_linear && index == lst->tail)) lst->is_linear = 0;
 
     ssize_t free_cell = lst->free;
     assert(free_cell > 0);
@@ -83,9 +83,7 @@ ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 ssize_t list_insert_back(my_list *lst, lst_elem value)
 {
     assert(lst);
-
     assert(lst->free > 0 && "Attempting to insert to full list\n");
-
     list_assert(lst);
 
     ssize_t ans = list_insert_after(lst, value, lst->tail);
@@ -96,12 +94,11 @@ ssize_t list_insert_back(my_list *lst, lst_elem value)
 void list_del(my_list *lst, ssize_t index)
 {
     assert(lst);
-
     assert(index > 0);
-
     assert(lst->data[index].prev != -1);
-
     list_assert(lst);
+
+    if(!(lst->is_linear && index == lst->tail)) lst->is_linear = 0;
 
     lst->data[lst->data[index].prev].next = lst->data[index].next;
 
@@ -117,12 +114,34 @@ void list_del(my_list *lst, ssize_t index)
     return;
 }
 
+void list_realloc(my_list *lst, ssize_t new_size)
+{
+    assert(lst);
+    assert(new_size > lst->size);
+    list_assert(lst);
+
+    lst->data = (lst_data*)realloc(lst->data, new_size*sizeof(lst_data));
+    assert(lst->data);
+
+    ssize_t index = lst->size;
+    for(index = lst->size; index < new_size; index++)
+    {
+        lst->data[index].prev = -1;
+        lst->data[index].next = lst->free;
+        lst->free = index;
+    }
+
+    lst->size = new_size;
+
+    list_assert(lst);
+
+    return;
+}
+
 ssize_t logic_to_phys(my_list *lst, ssize_t num)
 {
     assert(lst);
-
     assert(num >= 0);
-
     list_assert(lst);
 
     ssize_t current = 0, i = 0;
@@ -139,8 +158,9 @@ ssize_t logic_to_phys(my_list *lst, ssize_t num)
 void linearise(my_list *lst)
 {
     assert(lst);
-
     list_assert(lst);
+
+    if(lst->is_linear) return;
 
     lst_data *new_data = (lst_data*)calloc(lst->size, sizeof(lst_data));
     assert(new_data);
@@ -173,7 +193,14 @@ void linearise(my_list *lst)
     free(lst->data);
     lst->data = new_data;
 
+    lst->is_linear = 1;
+
     list_assert(lst);
 
     return;
+}
+
+char check_lin(my_list *lst)
+{
+    return lst->is_linear;
 }

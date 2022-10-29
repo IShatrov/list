@@ -8,31 +8,29 @@
 enum lst_err_codes
 {
     BAD_SIZE          = 1<<0,
-    BAD_TAIL          = 1<<2,
-    BAD_FREE          = 1<<3,
+    BAD_TAIL          = 1<<1,
+    BAD_FREE          = 1<<2,
 
-    ZERO_ELMT_CHANGED = 1<<4,
+    WRONG_PREV        = 1<<3,
 
-    WRONG_PREV        = 1<<5,
-
-    WRONG_PREV_EMPTY  = 1<<6,
+    WRONG_PREV_EMPTY  = 1<<4,
 };
 
 typedef char lst_elem;
 
-struct lst_data_
+typedef struct
 {
     lst_elem value;
 
     int next;
 
     int prev;
-};
+} lst_data;
 
-typedef struct lst_data_ lst_data;
-
-struct my_list_
+typedef struct
 {
+    char is_linear;
+
     ssize_t size;
 
     lst_data* data;
@@ -44,9 +42,7 @@ struct my_list_
     FILE* log;
 
     char create_pretty_dump;
-};
-
-typedef struct my_list_ my_list;
+} my_list;
 
 //! @param[in] lst Pointer to list.
 //! @param[in] err_code Error code.
@@ -94,6 +90,11 @@ ssize_t list_insert_back(my_list *lst, lst_elem value);
 void list_del(my_list *lst, ssize_t index);
 
 //! @param[in] lst Pointer to list.
+//! @param[in] new_size New size.
+//! @brief If new size > current size, reallocates list data field and marks new elements as empty.
+void list_realloc(my_list *lst, ssize_t new_size);
+
+//! @param[in] lst Pointer to list.
 //! @param[in] num Logical number.
 //! @return Returns physical address of element.
 //! @brief Transforms logical number to physical.
@@ -102,5 +103,9 @@ ssize_t logic_to_phys(my_list *lst, ssize_t num);
 //! @param[in] lst Pointer to list.
 //! @brief Linearises list.
 void linearise(my_list *lst);
+
+//! @param[in] lst Pointer to list.
+//! @return Returns 1 if lst is linear and 0 otherwise.
+char check_lin(my_list *lst);
 
 #endif

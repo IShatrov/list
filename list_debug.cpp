@@ -7,8 +7,6 @@
     PRINT_ERR(BAD_TAIL, BAD TAIL);                      \
     PRINT_ERR(BAD_FREE, BAD FREE);                      \
                                                         \
-    PRINT_ERR(ZERO_ELMT_CHANGED, ZERO ELEMENT CHANGED); \
-                                                        \
     PRINT_ERR(WRONG_PREV, PREVIOUS ELEMENT MISMATCH);   \
     PRINT_ERR(WRONG_PREV_EMPTY, EMPTY CELL PREV NOT -1);\
 
@@ -35,8 +33,8 @@ void list_dump(my_list *lst, int err_code)
 
         for(int i = 0; i < lst->size; i++) fprintf(log, "%3d", lst->data[i].prev);
 
-        fprintf(log, "\nsize: %d, tail: %d, free: %d\n",
-            lst->size, lst->tail, lst->free);
+        fprintf(log, "\nsize: %d, tail: %d, free: %d, is_linear: %d\n",
+            lst->size, lst->tail, lst->free, lst->is_linear);
 
         PRINT_ERRORS;
 
@@ -58,12 +56,12 @@ void list_pretty_dump(my_list *lst, int err_code)
     gr_viz = fopen("graphviz_code.txt", "w");
     assert(gr_viz);
 
-    fprintf(gr_viz, "digraph dump\n{\n");
-    fprintf(gr_viz, "\trankdir = LR;\n");
-    fprintf(gr_viz, "\tnode[shape = \"record\", style = \"rounded\"];\n\n");
-
-    fprintf(gr_viz, "\thead[shape = \"circle\", style = \"filled\", fillcolor = \"#FC5E53\"]\n");
-    fprintf(gr_viz, "\thead->0\n\n");
+    fprintf(gr_viz, "digraph dump\n{\n"
+                    "\trankdir = LR;\n"
+                    "\tnode[shape = \"record\", style = \"rounded\"];\n\n"
+                    "\thead[shape = \"circle\", style = \"filled\", fillcolor = \"#FC5E53\"]\n"
+                    "\thead->0\n\n"
+            );
 
     ssize_t current = 0;
     int i = 0;
@@ -106,7 +104,7 @@ void list_pretty_dump(my_list *lst, int err_code)
 
     PRINT_ERRORS;
 
-    fprintf(log, "size = %d\n", lst->size);
+    fprintf(log, "size = %d, is_linear = %d\n", lst->size, lst->is_linear);
     fprintf(log, "<img src=dump_pic.png>");
 
     fclose(log);
@@ -123,9 +121,6 @@ char list_assert(my_list *lst)
     if(lst->size <= 0) err_code |= BAD_SIZE;
     if(lst->tail < 0) err_code |= BAD_TAIL;
     if(lst->free < 0) err_code |= BAD_FREE;
-
-    //if(lst->data[0].prev != 0) err_code |= ZERO_ELMT_CHANGED;
-    //if(lst->data[0].next != 0) err_code |= ZERO_ELMT_CHANGED;
 
     ssize_t check = 0;
     int i = 0;
