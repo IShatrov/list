@@ -12,17 +12,17 @@ void list_ctor(my_list *lst, ssize_t lst_size, FILE *log, char create_pretty_dum
     lst->data = (lst_data*)calloc(lst_size, sizeof(lst_data));
     assert(lst->data);
 
-    lst->data[0].next = 0;     //make zero cell point to itself
-    lst->data[0].prev = 0;
+    lst->data[0].next = ZERO_ELMT;     //make zero cell point to itself
+    lst->data[0].prev = ZERO_ELMT;
 
     for(int i = 1; i < lst_size; i++) //mark all cells as empty
     {
         lst->data[i].next = i + 1;
-        lst->data[i].prev = -1;
+        lst->data[i].prev = EMPTY_PREV;
     }
-    lst->data[lst_size - 1].next = 0; //last elem point to zero
+    lst->data[lst_size - 1].next = ZERO_ELMT; //last elem point to zero
 
-    lst->tail = 0;
+    lst->tail = ZERO_ELMT;
     lst->free = 1;
     lst->is_linear = 1;
 
@@ -38,16 +38,17 @@ void list_dtor(my_list *lst)
 
     for(int i = 0; i < lst->size; i++)
     {
-        lst->data[i].next = -100;
-        lst->data[i].prev = -100;
+        lst->data[i].next = ELMT_POISON;
+        lst->data[i].prev = ELMT_POISON;
     }
 
-    lst->size = -1;
-    lst->tail = -1;
-    lst->free = -1;
+    lst->size = INDEX_POISON;
+    lst->tail = INDEX_POISON;
+    lst->free = INDEX_POISON;
     lst->log = NULL;
 
-    free(lst->data);  //null
+    free(lst->data);
+    lst->data = NULL;
 
     return;
 }
@@ -57,7 +58,8 @@ ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
     assert(lst);
     assert(index >= 0);
     assert(lst->free > 0 && "Attempting to insert to full list\n");
-    assert(lst->data[index].prev != -1); //not allow to insert after empty cell
+    assert(lst->data[index].prev != EMPTY_PREV); //not allow to insert after empty cell
+    list_assert(lst);
 
     if(!(lst->is_linear && index == lst->tail)) lst->is_linear = 0;
 
@@ -83,8 +85,9 @@ ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 ssize_t list_insert_back(my_list *lst, lst_elem value)
 {
     assert(lst);
-    assert(lst->free > 0 && "Attempting to insert to full list\n");
     list_assert(lst);
+
+    if(!lst->free) list_realloc(lst, 2*lst->size);
 
     ssize_t ans = list_insert_after(lst, value, lst->tail);
 
@@ -95,7 +98,7 @@ void list_del(my_list *lst, ssize_t index)
 {
     assert(lst);
     assert(index > 0);
-    assert(lst->data[index].prev != -1);
+    assert(lst->data[index].prev != EMPTY_PREV);
     list_assert(lst);
 
     if(!(lst->is_linear && index == lst->tail)) lst->is_linear = 0;
@@ -105,7 +108,7 @@ void list_del(my_list *lst, ssize_t index)
     lst->data[lst->data[index].next].prev = lst->data[index].prev;
 
     lst->tail = lst->data[0].prev;
-    lst->data[index].prev = -1;
+    lst->data[index].prev = EMPTY_PREV;              //interface
     lst->data[index].next = lst->free;
     lst->free = index;
 
@@ -126,7 +129,7 @@ void list_realloc(my_list *lst, ssize_t new_size)
     ssize_t index = lst->size;
     for(index = lst->size; index < new_size; index++)
     {
-        lst->data[index].prev = -1;
+        lst->data[index].prev = EMPTY_PREV;
         lst->data[index].next = lst->free;
         lst->free = index;
     }
@@ -177,7 +180,7 @@ void linearise(my_list *lst)
     }
 
     new_data[0].prev = i;
-    new_data[i].next = 0;
+    new_data[i].next = ZERO_ELMT;
 
     lst->tail = i;
     lst->free = ++i;
@@ -185,10 +188,10 @@ void linearise(my_list *lst)
     for(; i< lst->size; i++)
     {
         new_data[i].next = i + 1;
-        new_data[i].prev = -1;
+        new_data[i].prev = EMPTY_PREV;
     }
 
-    new_data[i - 1].next = 0;
+    new_data[i - 1].next = ZERO_ELMT;
 
     free(lst->data);
     lst->data = new_data;

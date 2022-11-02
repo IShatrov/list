@@ -142,7 +142,7 @@ char list_assert(my_list *lst)
     check = lst->free;
     for(; i < lst->size; i++)
     {
-        if(check && lst->data[check].prev != -1)
+        if(check && lst->data[check].prev != EMPTY_PREV)
         {
             err_code |= WRONG_PREV_EMPTY;
 

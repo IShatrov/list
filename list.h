@@ -16,6 +16,16 @@ enum lst_err_codes
     WRONG_PREV_EMPTY  = 1<<4,
 };
 
+enum data_consts
+{
+    ZERO_ELMT = 0,
+
+    EMPTY_PREV = -1,
+
+    ELMT_POISON = -100,
+    INDEX_POISON = -1,
+};
+
 typedef char lst_elem;
 
 typedef struct
