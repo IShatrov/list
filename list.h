@@ -50,8 +50,6 @@ typedef struct
     ssize_t free;
 
     FILE* log;
-
-    char create_pretty_dump;
 } my_list;
 
 //! @param[in] lst Pointer to list.
@@ -75,7 +73,7 @@ char list_assert(my_list *lst);
 //! @param[in] create_pretty dump If equals 0 pretty dump is not created.
 //! @param[out] lst Initiallised list.
 //! @brief Creates list.
-void list_ctor(my_list *lst, ssize_t lst_size, FILE *log, char create_pretty_dump);
+void list_ctor(my_list *lst, ssize_t lst_size, char create_dump);
 
 //! @param[in] lst Pointer to list.
 //! @brief Destroys list.

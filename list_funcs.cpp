@@ -1,13 +1,16 @@
 #include "list.h"
 
-void list_ctor(my_list *lst, ssize_t lst_size, FILE *log, char create_pretty_dump)
+void list_ctor(my_list *lst, ssize_t lst_size, char create_dump)
 {
     assert(lst);
     assert(lst_size > 0);
 
     lst->size = lst_size;
-    lst->log = log;
-    lst->create_pretty_dump = create_pretty_dump;
+    if(create_dump)
+    {
+        lst->log = fopen("lst_log.txt", "w");
+        assert(lst->log);
+    }
 
     lst->data = (lst_data*)calloc(lst_size, sizeof(lst_data));
     assert(lst->data);
@@ -45,6 +48,8 @@ void list_dtor(my_list *lst)
     lst->size = INDEX_POISON;
     lst->tail = INDEX_POISON;
     lst->free = INDEX_POISON;
+
+    fclose(lst->log);
     lst->log = NULL;
 
     free(lst->data);

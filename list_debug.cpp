@@ -46,7 +46,7 @@ void list_dump(my_list *lst, int err_code)
         fputc('\n', log);
     }
 
-    if(lst->create_pretty_dump) list_pretty_dump(lst, err_code);
+    list_pretty_dump(lst, err_code);
 
     return;
 }
