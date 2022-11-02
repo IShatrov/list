@@ -10,6 +10,9 @@
     PRINT_ERR(WRONG_PREV, PREVIOUS ELEMENT MISMATCH);   \
     PRINT_ERR(WRONG_PREV_EMPTY, EMPTY CELL PREV NOT -1);\
 
+#define PRINT_CONTENT(specifier, val) for(int i = 0; i < lst->size; i++) fprintf(log, specifier, val)
+
+#define LOG_PRINT(string) fprintf(log, string)
 
 void list_dump(my_list *lst, int err_code)
 {
@@ -19,19 +22,19 @@ void list_dump(my_list *lst, int err_code)
 
     if(lst->log)
     {
-        for(int i = 0; i < lst->size; i++) fprintf(log, "%3d", i);
+        PRINT_CONTENT("%3d", i);
 
-        fprintf(log, "\ndata:\n");
+        LOG_PRINT("\ndata:\n");
 
-        for(int i = 0; i < lst->size; i++) fprintf(log, "%3c", lst->data[i].value);
+        PRINT_CONTENT("%3c", lst->data[i].value);
 
-        fprintf(log, "\nnext:\n");
+        LOG_PRINT("\nnext:\n");
 
-        for(int i = 0; i < lst->size; i++) fprintf(log, "%3d", lst->data[i].next);
+        PRINT_CONTENT("%3d", lst->data[i].next);
 
-        fprintf(log, "\nprev:\n");
+        LOG_PRINT("\nprev:\n");
 
-        for(int i = 0; i < lst->size; i++) fprintf(log, "%3d", lst->data[i].prev);
+        PRINT_CONTENT("%3d", lst->data[i].prev);
 
         fprintf(log, "\nsize: %d, tail: %d, free: %d, is_linear: %d\n",
             lst->size, lst->tail, lst->free, lst->is_linear);
@@ -39,7 +42,7 @@ void list_dump(my_list *lst, int err_code)
         PRINT_ERRORS;
 
         fputc('\n', log);
-        printf("==============================\n");
+        LOG_PRINT("===================================\n");
         fputc('\n', log);
     }
 
