@@ -1,5 +1,11 @@
 #include "list.h"
 
+#define MARK_AS_FREE(index)           \
+lst->data[index].prev = EMPTY_PREV;   \
+lst->data[index].next = lst->free;    \
+lst->free = index;                    \
+
+
 void list_ctor(my_list *lst, ssize_t lst_size, char create_dump)
 {
     assert(lst);
@@ -62,9 +68,10 @@ ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 {
     assert(lst);
     assert(index >= 0);
-    assert(lst->free > 0 && "Attempting to insert to full list\n");
     assert(lst->data[index].prev != EMPTY_PREV); //not allow to insert after empty cell
     list_assert(lst);
+
+    if(!lst->free) list_realloc(lst, 2*lst->size);
 
     if(!(lst->is_linear && index == lst->tail)) lst->is_linear = 0;
 
@@ -113,9 +120,8 @@ void list_del(my_list *lst, ssize_t index)
     lst->data[lst->data[index].next].prev = lst->data[index].prev;
 
     lst->tail = lst->data[0].prev;
-    lst->data[index].prev = EMPTY_PREV;              //interface
-    lst->data[index].next = lst->free;
-    lst->free = index;
+
+    MARK_AS_FREE(index);
 
     list_assert(lst);
 
@@ -134,9 +140,7 @@ void list_realloc(my_list *lst, ssize_t new_size)
     ssize_t index = lst->size;
     for(index = lst->size; index < new_size; index++)
     {
-        lst->data[index].prev = EMPTY_PREV;
-        lst->data[index].next = lst->free;
-        lst->free = index;
+        MARK_AS_FREE(index);
     }
 
     lst->size = new_size;
