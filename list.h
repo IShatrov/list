@@ -116,4 +116,16 @@ void linearise(my_list *lst);
 //! @return Returns 1 if lst is linear and 0 otherwise.
 char check_lin(my_list *lst);
 
+//! @param[in] lst Pointer to list.
+//! @param[in] index Physical address of element to be added to free list.
+//! @brief Marks element as free.
+void free_push(my_list *lst, ssize_t index);
+
+//! @param[in] lst Pointer to list.
+//! @param[in] value Value to store in popped element.
+//! @param[in] index Physical address of element after which newly added element will be logically.
+//! @return Returns physical address of popped element.
+//! @brief Adds free element to list..
+ssize_t free_pop(my_list *lst, lst_elem value, ssize_t index);
+
 #endif

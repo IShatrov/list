@@ -1,11 +1,5 @@
 #include "list.h"
 
-#define MARK_AS_FREE(index)           \
-lst->data[index].prev = EMPTY_PREV;   \
-lst->data[index].next = lst->free;    \
-lst->free = index;                    \
-
-
 void list_ctor(my_list *lst, ssize_t lst_size, char create_dump)
 {
     assert(lst);
@@ -75,14 +69,7 @@ ssize_t list_insert_after(my_list *lst, lst_elem value, ssize_t index)
 
     if(!(lst->is_linear && index == lst->tail)) lst->is_linear = 0;
 
-    ssize_t free_cell = lst->free;
-    assert(free_cell > 0);
-    lst->free = lst->data[free_cell].next;
-
-    lst->data[free_cell].value = value;
-
-    lst->data[free_cell].next = lst->data[index].next;
-    lst->data[free_cell].prev = index;
+    ssize_t free_cell = free_pop(lst, value, index);
 
     lst->data[lst->data[index].next].prev = free_cell;
     lst->data[index].next = free_cell;
@@ -121,7 +108,7 @@ void list_del(my_list *lst, ssize_t index)
 
     lst->tail = lst->data[0].prev;
 
-    MARK_AS_FREE(index);
+    free_push(lst, index);
 
     list_assert(lst);
 
@@ -140,7 +127,7 @@ void list_realloc(my_list *lst, ssize_t new_size)
     ssize_t index = lst->size;
     for(index = lst->size; index < new_size; index++)
     {
-        MARK_AS_FREE(index);
+        free_push(lst, index);
     }
 
     lst->size = new_size;
@@ -215,4 +202,34 @@ void linearise(my_list *lst)
 char check_lin(my_list *lst)
 {
     return lst->is_linear;
+}
+
+void free_push(my_list *lst, ssize_t index)
+{
+    assert(lst);
+    assert(index > 0);
+    list_assert(lst);
+
+    lst->data[index].prev = EMPTY_PREV;
+    lst->data[index].next = lst->free;
+    lst->free = index;
+
+    return;
+}
+
+ssize_t free_pop(my_list *lst, lst_elem value, ssize_t index)
+{
+    assert(lst);
+    assert(index >= 0);
+
+    ssize_t free_cell = lst->free;
+    assert(free_cell > 0);
+    lst->free = lst->data[free_cell].next;
+
+    lst->data[free_cell].value = value;
+
+    lst->data[free_cell].next = lst->data[index].next;
+    lst->data[free_cell].prev = index;
+
+    return free_cell;
 }
