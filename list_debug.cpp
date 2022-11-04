@@ -12,7 +12,8 @@
 
 #define PRINT_CONTENT(specifier, val) for(int i = 0; i < lst->size; i++) fprintf(log, specifier, val)
 
-#define LOG_PRINT(string) fprintf(log, string)
+#define LOG_PRINT(...) fprintf(log, __VA_ARGS__)
+#define GR_VIZ_PRINT(...) fprintf(gr_viz, __VA_ARGS__)
 
 void list_dump(my_list *lst, int err_code)
 {
@@ -36,7 +37,7 @@ void list_dump(my_list *lst, int err_code)
 
         PRINT_CONTENT("%3d", lst->data[i].prev);
 
-        fprintf(log, "\nsize: %d, tail: %d, free: %d, is_linear: %d\n",
+        LOG_PRINT("\nsize: %d, tail: %d, free: %d, is_linear: %d\n",
             lst->size, lst->tail, lst->free, lst->is_linear);
 
         PRINT_ERRORS;
@@ -59,36 +60,36 @@ void list_pretty_dump(my_list *lst, int err_code)
     gr_viz = fopen("graphviz_code.txt", "w");
     assert(gr_viz);
 
-    fprintf(gr_viz, "digraph dump\n{\n"
-                    "\trankdir = LR;\n"
-                    "\tnode[shape = \"record\", style = \"rounded\"];\n\n"
-                    "\thead[shape = \"circle\", style = \"filled\", fillcolor = \"#FC5E53\"]\n"
-                    "\thead->0\n\n"
-            );
+    GR_VIZ_PRINT("digraph dump\n{\n"
+                "\trankdir = LR;\n"
+                "\tnode[shape = \"record\", style = \"rounded\"];\n\n"
+                "\thead[shape = \"circle\", style = \"filled\", fillcolor = \"#FC5E53\"]\n"
+                "\thead->0\n\n"
+                );
 
     ssize_t current = 0;
     int i = 0;
     for(; i < lst->size; i++)
     {
-        fprintf(gr_viz, "\t%d[label = \"%d | val: %d | next: %d | prev: %d\"];\n", current, current,
+        GR_VIZ_PRINT("\t%d[label = \"%d | val: %d | next: %d | prev: %d\"];\n", current, current,
             lst->data[current].value, lst->data[current].next, lst->data[current].prev);
 
-        fprintf(gr_viz, "\t%d->%d[color = \"red\"];\n", current, lst->data[current].next);
-        fprintf(gr_viz, "\t%d->%d[color = \"blue\"];\n\n", current, lst->data[current].prev);
+        GR_VIZ_PRINT("\t%d->%d[color = \"red\"];\n", current, lst->data[current].next);
+        GR_VIZ_PRINT("\t%d->%d[color = \"blue\"];\n\n", current, lst->data[current].prev);
 
         if(!(current = lst->data[current].next)) break; //stop if reached 0
     }
 
     current = lst->free;
-    fprintf(gr_viz, "\tfree[shape = \"circle\", style = \"filled\", fillcolor = \"#FC5E53\"]\n");
-    fprintf(gr_viz, "\tfree->%d\n\n", current);
+    GR_VIZ_PRINT("\tfree[shape = \"circle\", style = \"filled\", fillcolor = \"#FC5E53\"]\n");
+    GR_VIZ_PRINT("\tfree->%d\n\n", current);
 
     for(; i < lst->size; i++)
     {
-        fprintf(gr_viz, "\t%d[label = \"%d | val: %d | next: %d | prev: %d\"];\n", current, current,
+        GR_VIZ_PRINT("\t%d[label = \"%d | val: %d | next: %d | prev: %d\"];\n", current, current,
             lst->data[current].value, lst->data[current].next, lst->data[current].prev);
 
-        fprintf(gr_viz, "\t%d->%d[color = \"red\"];\n", current, lst->data[current].next);
+        GR_VIZ_PRINT("\t%d->%d[color = \"red\"];\n", current, lst->data[current].next);
 
         if(!(current = lst->data[current].next)) break; //stop if reached 0
     }
@@ -103,12 +104,12 @@ void list_pretty_dump(my_list *lst, int err_code)
     log = fopen("list_dump.htm", "w");
     assert(log);
 
-    fprintf(log, "<pre>\n");
+    LOG_PRINT("<pre>\n");
 
     PRINT_ERRORS;
 
-    fprintf(log, "size = %d, is_linear = %d\n", lst->size, lst->is_linear);
-    fprintf(log, "<img src=dump_pic.png>");
+    LOG_PRINT("size = %d, is_linear = %d\n", lst->size, lst->is_linear);
+    LOG_PRINT("<img src=dump_pic.png>");
 
     fclose(log);
 
